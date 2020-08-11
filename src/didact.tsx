@@ -20,7 +20,9 @@ interface DidactElement {
   props: Record<string, unknown> & { children: DidactElement[] };
 }
 
-interface DidactFiber extends DidactElement {}
+interface DidactFiber extends DidactElement {
+  dom: HTMLElement;
+}
 
 const createTextElement = (text: string): DidactElement => ({
   type: 'TEXT_ELEMENT',
@@ -61,10 +63,12 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
   return dom;
 };
 
-let nextUnitOfWork: unknown = null;
+let nextUnitOfWork: DidactFiber | null = null;
 
-const performUnitOfWork = (fiber: unknown): void => {
-  // TODO
+const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
+  // TODO add dom node
+  // TODO create new fibers
+  // TODO return next unit of work
 };
 
 const workLoop = (deadline: IdleDeadline): void => {
@@ -79,7 +83,14 @@ const workLoop = (deadline: IdleDeadline): void => {
 requestIdleCallback(workLoop);
 
 const render = (element: DidactElement, container: HTMLElement): void => {
-  // TODO set next unit of work
+  // set next unit of work
+  nextUnitOfWork = {
+    dom: container,
+    type: '',
+    props: {
+      children: [element],
+    },
+  };
 };
 
 const Didact = {
