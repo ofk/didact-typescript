@@ -26,6 +26,7 @@ interface DidactFiber extends DidactElement {
   parent?: DidactFiber;
   child?: DidactFiber;
   sibling?: DidactFiber;
+  alternate?: DidactFiber | null;
 }
 
 const createTextElement = (text: string): DidactElement => ({
@@ -68,10 +69,28 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
 };
 
 let nextUnitOfWork: DidactFiber | null = null;
+let currentRoot: DidactFiber | null = null;
 let wipRoot: DidactFiber | null = null;
 
+const commitWork = (fiber: DidactFiber | null | undefined): void => {
+  if (!fiber) {
+    return;
+  }
+  if (!fiber.parent) throw new Error('Invalid fiber');
+  const domParent = fiber.parent.dom;
+  if (!domParent) throw new Error('Invalid fiber');
+  if (!fiber.dom) throw new Error('Invalid fiber');
+  domParent.appendChild(fiber.dom);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
+};
+
 const commitRoot = (): void => {
-  // TODO add nodes to dom
+  if (!wipRoot) throw new Error('Invalid commitRoot call');
+  // add nodes to dom
+  commitWork(wipRoot.child);
+  currentRoot = wipRoot;
+  wipRoot = null;
 };
 
 const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
@@ -143,6 +162,7 @@ const render = (element: DidactElement, container: HTMLElement): void => {
     props: {
       children: [element],
     },
+    alternate: currentRoot,
   };
   nextUnitOfWork = wipRoot;
 };
