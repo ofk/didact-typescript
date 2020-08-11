@@ -42,6 +42,23 @@ const createElement = (
   },
 });
 
+let nextUnitOfWork: unknown = null;
+
+const performUnitOfWork = (fiber: unknown): void => {
+  // TODO
+};
+
+const workLoop = (deadline: IdleDeadline): void => {
+  let shouldYield = false;
+  while (nextUnitOfWork && !shouldYield) {
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+    shouldYield = deadline.timeRemaining() < 1;
+  }
+  requestIdleCallback(workLoop);
+};
+
+requestIdleCallback(workLoop);
+
 const render = (element: DidactElement, container: HTMLElement): void => {
   // create dom nodes
   const dom =
