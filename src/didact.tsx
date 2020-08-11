@@ -7,22 +7,38 @@ declare namespace JSX {
   }
 }
 
-type HTMLAttributes<T> = Partial<T>;
+type DOMAttributes = {
+  children?: DidactNode;
+};
+
+type HTMLAttributes<T> = Partial<Omit<T, keyof DOMAttributes>> & DOMAttributes;
+
+type DidactNode = DidactElement | string;
 
 interface DidactElement {
   type: string;
-  props: Record<string, unknown> & { children: unknown[] };
+  props: Record<string, unknown> & { children: DidactElement[] };
 }
+
+const createTextElement = (text: string): DidactElement => ({
+  type: 'TEXT_ELEMENT',
+  props: {
+    nodeValue: text,
+    children: [],
+  },
+});
 
 const createElement = (
   type: string,
   props: Record<string, unknown>,
-  ...children: unknown[]
+  ...children: DidactNode[]
 ): DidactElement => ({
   type,
   props: {
     ...props,
-    children,
+    children: children.map((child) =>
+      typeof child === 'object' ? child : createTextElement(child)
+    ),
   },
 });
 
