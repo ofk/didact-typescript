@@ -68,16 +68,16 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
 };
 
 let nextUnitOfWork: DidactFiber | null = null;
+let wipRoot: DidactFiber | null = null;
+
+const commitRoot = (): void => {
+  // TODO add nodes to dom
+};
 
 const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
   // add dom node
   if (!fiber.dom) {
     fiber.dom = createDom(fiber);
-  }
-
-  if (fiber.parent) {
-    if (!fiber.parent.dom) throw new Error('Invalid fiber');
-    fiber.parent.dom.appendChild(fiber.dom);
   }
 
   // create new fibers
@@ -125,6 +125,11 @@ const workLoop = (deadline: IdleDeadline): void => {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     shouldYield = deadline.timeRemaining() < 1;
   }
+
+  if (!nextUnitOfWork && wipRoot) {
+    commitRoot();
+  }
+
   requestIdleCallback(workLoop);
 };
 
@@ -132,13 +137,14 @@ requestIdleCallback(workLoop);
 
 const render = (element: DidactElement, container: HTMLElement): void => {
   // set next unit of work
-  nextUnitOfWork = {
+  wipRoot = {
     dom: container,
     type: '',
     props: {
       children: [element],
     },
   };
+  nextUnitOfWork = wipRoot;
 };
 
 const Didact = {
