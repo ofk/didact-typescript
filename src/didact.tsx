@@ -43,7 +43,22 @@ const createElement = (
 });
 
 const render = (element: DidactElement, container: HTMLElement): void => {
-  // TODO create dom nodes
+  // create dom nodes
+  const dom =
+    element.type === 'TEXT_ELEMENT'
+      ? document.createTextNode('')
+      : document.createElement(element.type);
+
+  const isProperty = (key: string): boolean => key !== 'children';
+  Object.keys(element.props)
+    .filter(isProperty)
+    .forEach((name) => {
+      ((dom as unknown) as Record<string, unknown>)[name] = element.props[name];
+    });
+
+  // TEXT_ELEMENT has no children.
+  element.props.children.forEach((child) => render(child, (dom as unknown) as HTMLElement));
+  container.appendChild(dom);
 };
 
 const Didact = {
