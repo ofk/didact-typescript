@@ -88,8 +88,10 @@ const commitWork = (fiber: DidactFiber | null | undefined): void => {
 };
 
 const commitRoot = (): void => {
+  if (!deletions) throw new Error('Invalid commitRoot call');
   if (!wipRoot) throw new Error('Invalid commitRoot call');
   // add nodes to dom
+  deletions.forEach(commitWork);
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
