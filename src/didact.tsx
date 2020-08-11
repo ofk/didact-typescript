@@ -93,14 +93,7 @@ const commitRoot = (): void => {
   wipRoot = null;
 };
 
-const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
-  // add dom node
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber);
-  }
-
-  // create new fibers
-  const elements = fiber.props.children;
+const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): void => {
   let index = 0;
   let prevSibling: DidactFiber | null = null;
 
@@ -110,12 +103,12 @@ const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
     const newFiber: DidactFiber = {
       type: element.type,
       props: element.props,
-      parent: fiber,
+      parent: wipFiber,
       dom: null,
     };
 
     if (index === 0) {
-      fiber.child = newFiber;
+      wipFiber.child = newFiber;
     } else {
       if (!prevSibling) throw new Error('Invalid fiber');
       prevSibling.sibling = newFiber;
@@ -123,6 +116,17 @@ const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
     prevSibling = newFiber;
     index += 1;
   }
+};
+
+const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
+  // add dom node
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber);
+  }
+
+  // create new fibers
+  const elements = fiber.props.children;
+  reconcileChildren(fiber, elements);
 
   // return next unit of work
   if (fiber.child) {
