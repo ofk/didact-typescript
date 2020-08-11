@@ -42,8 +42,13 @@ const createElement = (
   },
 });
 
+const render = (element: DidactElement, container: HTMLElement): void => {
+  // TODO create dom nodes
+};
+
 const Didact = {
   createElement,
+  render,
 };
 
 const element = (
@@ -53,6 +58,7 @@ const element = (
   </div>
 );
 
-const container = document.getElementById('root');
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const container = document.getElementById('root')!;
 
-ReactDOM.render(element, container);
+Didact.render(element, container);
