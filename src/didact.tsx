@@ -27,6 +27,7 @@ interface DidactFiber extends DidactElement {
   child?: DidactFiber;
   sibling?: DidactFiber;
   alternate?: DidactFiber | null;
+  effectTag?: string;
 }
 
 const createTextElement = (text: string): DidactElement => ({
@@ -71,6 +72,7 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
 let nextUnitOfWork: DidactFiber | null = null;
 let currentRoot: DidactFiber | null = null;
 let wipRoot: DidactFiber | null = null;
+let deletions: DidactFiber[] | null = null;
 
 const commitWork = (fiber: DidactFiber | null | undefined): void => {
   if (!fiber) {
@@ -94,25 +96,45 @@ const commitRoot = (): void => {
 };
 
 const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): void => {
+  if (!deletions) throw new Error('Invalid reconcileChildren call');
+
   let index = 0;
   let oldFiber = wipFiber.alternate && wipFiber.alternate.child;
   let prevSibling: DidactFiber | null = null;
 
   while (index < elements.length || oldFiber != null) {
     const element = elements[index];
-    const newFiber = null;
+    let newFiber: DidactFiber | null = null;
 
     // compare oldFiber to element
     const sameType = oldFiber && element && element.type === oldFiber.type;
 
-    if (sameType) {
-      // TODO update the node
+    if (sameType && oldFiber) {
+      // update the node
+      newFiber = {
+        type: oldFiber.type,
+        props: element.props,
+        dom: oldFiber.dom,
+        parent: wipFiber,
+        alternate: oldFiber,
+        effectTag: 'UPDATE',
+      };
     }
     if (element && !sameType) {
-      // TODO add this node
+      // add this node
+      newFiber = {
+        type: element.type,
+        props: element.props,
+        dom: null,
+        parent: wipFiber,
+        alternate: null,
+        effectTag: 'PLACEMENT',
+      };
     }
     if (oldFiber && !sameType) {
-      // TODO delete the oldFiber's node
+      // delete the oldFiber's node
+      oldFiber.effectTag = 'DELETION';
+      deletions.push(oldFiber);
     }
 
     if (oldFiber) {
@@ -181,6 +203,7 @@ const render = (element: DidactElement, container: HTMLElement): void => {
     },
     alternate: currentRoot,
   };
+  deletions = [];
   nextUnitOfWork = wipRoot;
 };
 
