@@ -6,7 +6,9 @@
   "author": "ofk <ofkjpn+github@gmail.com>",
   "license": "UNLICENSED",
   "scripts": {
-    "format": "prettier --write '**/*.{css,gql,graphql,html,js,json,jsx,less,markdown,md,mdown,mdx,mkdn,scss,ts,tsx,vue,yaml,yml}'"
+    "format": "run-p format:*",
+    "format:files": "prettier --write '**/*.{css,gql,graphql,html,json,less,markdown,md,mdown,mdx,mkdn,scss,vue,yaml,yml}'",
+    "format:scripts": "eslint --fix --ext .js,.jsx,.ts,.tsx ."
   },
   "devDependencies": {
     "@ofk/eslint-config-recommend": "^1.1.0",
@@ -23,6 +25,7 @@
     }
   },
   "lint-staged": {
-    "*.{css,gql,graphql,html,js,json,jsx,less,markdown,md,mdown,mdx,mkdn,scss,ts,tsx,vue,yaml,yml}": "prettier --write"
+    "*.{css,gql,graphql,html,json,less,markdown,md,mdown,mdx,mkdn,scss,vue,yaml,yml}": "prettier --write",
+    "*.{js,jsx,ts,tsx}": "eslint --fix --ext .js,.jsx,.ts,.tsx"
   }
 }
