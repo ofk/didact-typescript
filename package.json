@@ -1,0 +1,8 @@
+{
+  "name": "didact-typescript",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "author": "ofk <ofkjpn+github@gmail.com>",
+  "license": "UNLICENSED"
+}
