@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace JSX {
   interface IntrinsicElements {
@@ -21,7 +22,8 @@ interface DidactElement {
 }
 
 interface DidactFiber extends DidactElement {
-  dom: HTMLElement;
+  dom: HTMLElement | Text;
+  parent?: DidactFiber;
 }
 
 const createTextElement = (text: string): DidactElement => ({
@@ -66,7 +68,15 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
 let nextUnitOfWork: DidactFiber | null = null;
 
 const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
-  // TODO add dom node
+  // add dom node
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber);
+  }
+
+  if (fiber.parent) {
+    fiber.parent.dom.appendChild(fiber.dom);
+  }
+
   // TODO create new fibers
   // TODO return next unit of work
 };
