@@ -105,7 +105,18 @@ const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
     index += 1;
   }
 
-  // TODO return next unit of work
+  // return next unit of work
+  if (fiber.child) {
+    return fiber.child;
+  }
+  let nextFiber: DidactFiber | null = fiber;
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      return nextFiber.sibling;
+    }
+    nextFiber = nextFiber.parent || null;
+  }
+  return nextFiber;
 };
 
 const workLoop = (deadline: IdleDeadline): void => {
