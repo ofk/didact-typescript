@@ -9,6 +9,27 @@ declare namespace JSX {
 
 type HTMLAttributes<T> = Partial<T>;
 
+interface DidactElement {
+  type: string;
+  props: Record<string, unknown> & { children: unknown[] };
+}
+
+const createElement = (
+  type: string,
+  props: Record<string, unknown>,
+  ...children: unknown[]
+): DidactElement => ({
+  type,
+  props: {
+    ...props,
+    children,
+  },
+});
+
+const Didact = {
+  createElement,
+};
+
 const element = (
   <div id="foo">
     <a>bar</a>
