@@ -20,6 +20,8 @@ interface DidactElement {
   props: Record<string, unknown> & { children: DidactElement[] };
 }
 
+interface DidactFiber extends DidactElement {}
+
 const createTextElement = (text: string): DidactElement => ({
   type: 'TEXT_ELEMENT',
   props: {
@@ -42,6 +44,23 @@ const createElement = (
   },
 });
 
+const createDom = (fiber: DidactFiber): HTMLElement | Text => {
+  // create dom nodes
+  const dom =
+    fiber.type === 'TEXT_ELEMENT'
+      ? document.createTextNode('')
+      : document.createElement(fiber.type);
+
+  const isProperty = (key: string): boolean => key !== 'children';
+  Object.keys(fiber.props)
+    .filter(isProperty)
+    .forEach((name) => {
+      ((dom as unknown) as Record<string, unknown>)[name] = fiber.props[name];
+    });
+
+  return dom;
+};
+
 let nextUnitOfWork: unknown = null;
 
 const performUnitOfWork = (fiber: unknown): void => {
@@ -60,22 +79,7 @@ const workLoop = (deadline: IdleDeadline): void => {
 requestIdleCallback(workLoop);
 
 const render = (element: DidactElement, container: HTMLElement): void => {
-  // create dom nodes
-  const dom =
-    element.type === 'TEXT_ELEMENT'
-      ? document.createTextNode('')
-      : document.createElement(element.type);
-
-  const isProperty = (key: string): boolean => key !== 'children';
-  Object.keys(element.props)
-    .filter(isProperty)
-    .forEach((name) => {
-      ((dom as unknown) as Record<string, unknown>)[name] = element.props[name];
-    });
-
-  // TEXT_ELEMENT has no children.
-  element.props.children.forEach((child) => render(child, (dom as unknown) as HTMLElement));
-  container.appendChild(dom);
+  // TODO set next unit of work
 };
 
 const Didact = {
