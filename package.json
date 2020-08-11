@@ -4,5 +4,8 @@
   "private": true,
   "main": "index.js",
   "author": "ofk <ofkjpn+github@gmail.com>",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
 }
