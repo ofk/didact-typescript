@@ -22,8 +22,10 @@ interface DidactElement {
 }
 
 interface DidactFiber extends DidactElement {
-  dom: HTMLElement | Text;
+  dom: HTMLElement | Text | null;
   parent?: DidactFiber;
+  child?: DidactFiber;
+  sibling?: DidactFiber;
 }
 
 const createTextElement = (text: string): DidactElement => ({
@@ -74,10 +76,35 @@ const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
   }
 
   if (fiber.parent) {
+    if (!fiber.parent.dom) throw new Error('Invalid fiber');
     fiber.parent.dom.appendChild(fiber.dom);
   }
 
-  // TODO create new fibers
+  // create new fibers
+  const elements = fiber.props.children;
+  let index = 0;
+  let prevSibling: DidactFiber | null = null;
+
+  while (index < elements.length) {
+    const element = elements[index];
+
+    const newFiber: DidactFiber = {
+      type: element.type,
+      props: element.props,
+      parent: fiber,
+      dom: null,
+    };
+
+    if (index === 0) {
+      fiber.child = newFiber;
+    } else {
+      if (!prevSibling) throw new Error('Invalid fiber');
+      prevSibling.sibling = newFiber;
+    }
+    prevSibling = newFiber;
+    index += 1;
+  }
+
   // TODO return next unit of work
 };
 
