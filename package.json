@@ -9,6 +9,8 @@
     "format": "prettier --write '**/*.{css,gql,graphql,html,js,json,jsx,less,markdown,md,mdown,mdx,mkdn,scss,ts,tsx,vue,yaml,yml}'"
   },
   "devDependencies": {
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
     "prettier": "^2.0.5"
   }
 }
