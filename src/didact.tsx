@@ -95,24 +95,26 @@ const commitRoot = (): void => {
 
 const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): void => {
   let index = 0;
+  let oldFiber = wipFiber.alternate && wipFiber.alternate.child;
   let prevSibling: DidactFiber | null = null;
 
-  while (index < elements.length) {
+  while (index < elements.length || oldFiber != null) {
     const element = elements[index];
+    const newFiber = null;
 
-    const newFiber: DidactFiber = {
-      type: element.type,
-      props: element.props,
-      parent: wipFiber,
-      dom: null,
-    };
+    // TODO compare oldFiber to element
+
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
 
     if (index === 0) {
-      wipFiber.child = newFiber;
-    } else {
+      wipFiber.child = newFiber || undefined;
+    } else if (element) {
       if (!prevSibling) throw new Error('Invalid fiber');
-      prevSibling.sibling = newFiber;
+      prevSibling.sibling = newFiber || undefined;
     }
+
     prevSibling = newFiber;
     index += 1;
   }
