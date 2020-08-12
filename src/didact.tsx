@@ -32,6 +32,7 @@ interface DidactFiber<T = unknown> extends DidactElement<T> {
   sibling?: DidactFiber;
   alternate?: DidactFiber | null;
   effectTag?: string;
+  hooks?: never[];
 }
 
 type SetStateAction<S> = (prevState: S) => S;
@@ -231,7 +232,13 @@ const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): vo
   }
 };
 
+let wipFiber: DidactFiber | null = null;
+let hookIndex: number | null = null;
+
 const updateFunctionComponent = (fiber: DidactFiber<FunctionComponent>): void => {
+  wipFiber = fiber;
+  hookIndex = 0;
+  wipFiber.hooks = [];
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 };
