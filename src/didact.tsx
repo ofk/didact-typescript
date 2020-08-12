@@ -5,6 +5,7 @@ declare namespace JSX {
     div: HTMLAttributes<HTMLDivElement>;
     a: HTMLAttributes<HTMLAnchorElement>;
     b: HTMLAttributes<HTMLElement>;
+    h1: HTMLAttributes<HTMLHeadingElement>;
   }
 }
 
@@ -15,6 +16,8 @@ type DOMAttributes = {
 type HTMLAttributes<T> = Partial<Omit<T, keyof DOMAttributes>> & DOMAttributes;
 
 type DidactNode = DidactElement | string;
+
+type FunctionComponent<P = Record<string, unknown>> = (props: P) => DidactElement;
 
 interface DidactElement {
   type: string;
@@ -267,12 +270,9 @@ const Didact = {
   render,
 };
 
-const element = (
-  <div id="foo">
-    <a>bar</a>
-    <b />
-  </div>
-);
+const App: FunctionComponent<{ name: string }> = (props) => <h1>Hi {props.name}</h1>;
+
+const element = <App name="foo" />;
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const container = document.getElementById('root')!;
