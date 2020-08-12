@@ -52,12 +52,36 @@ const createElement = (
   },
 });
 
+const isProperty = (key: string): boolean => key !== 'children';
+
+const isNew = (prev: DidactElement['props'], next: DidactElement['props']) => (
+  key: string
+): boolean => prev[key] !== next[key];
+
+const isGone = (_prev: DidactElement['props'], next: DidactElement['props']) => (
+  key: string
+): boolean => !(key in next);
+
 const updateDom = (
   dom: HTMLElement | Text,
   prevProps: DidactElement['props'],
   nextProps: DidactElement['props']
 ): void => {
-  // TODO
+  // Remove old properties
+  Object.keys(prevProps)
+    .filter(isProperty)
+    .filter(isGone(prevProps, nextProps))
+    .forEach((name) => {
+      ((dom as unknown) as Record<string, unknown>)[name] = '';
+    });
+
+  // Set new or changed properties
+  Object.keys(nextProps)
+    .filter(isProperty)
+    .filter(isNew(prevProps, nextProps))
+    .forEach((name) => {
+      ((dom as unknown) as Record<string, unknown>)[name] = nextProps[name];
+    });
 };
 
 const createDom = (fiber: DidactFiber): HTMLElement | Text => {
