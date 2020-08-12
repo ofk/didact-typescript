@@ -212,7 +212,8 @@ const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): vo
 };
 
 const updateFunctionComponent = (fiber: DidactFiber<FunctionComponent>): void => {
-  // TODO
+  const children = [fiber.type(fiber.props)];
+  reconcileChildren(fiber, children);
 };
 
 const updateHostComponent = (fiber: DidactFiber<string>): void => {
