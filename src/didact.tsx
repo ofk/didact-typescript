@@ -124,20 +124,35 @@ let currentRoot: DidactFiber | null = null;
 let wipRoot: DidactFiber | null = null;
 let deletions: DidactFiber[] | null = null;
 
+const commitDeletion = (fiber: DidactFiber, domParent: HTMLElement | Text): void => {
+  if (fiber.dom) {
+    domParent.removeChild(fiber.dom);
+  } else if (fiber.child) {
+    commitDeletion(fiber.child, domParent);
+  }
+};
+
 const commitWork = (fiber: DidactFiber | null | undefined): void => {
   if (!fiber) {
     return;
   }
+
   if (!fiber.parent) throw new Error('Invalid fiber');
-  const domParent = fiber.parent.dom;
+
+  let domParentFiber: DidactFiber | undefined = fiber.parent;
+  while (domParentFiber && !domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent;
+  }
+
+  const domParent = domParentFiber?.dom;
   if (!domParent) throw new Error('Invalid fiber');
+
   if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
     domParent.appendChild(fiber.dom);
   } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) {
     updateDom(fiber.dom, fiber.alternate?.props || { children: [] }, fiber.props);
   } else if (fiber.effectTag === 'DELETION') {
-    if (!fiber.dom) throw new Error('Invalid fiber');
-    domParent.removeChild(fiber.dom);
+    commitDeletion(fiber, domParent);
   }
   commitWork(fiber.child);
   commitWork(fiber.sibling);
