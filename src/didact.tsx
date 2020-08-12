@@ -27,6 +27,7 @@ interface DidactElement<T = unknown> {
 
 interface Hook<T = unknown> {
   state: T;
+  queue: SetStateAction<T>[];
 }
 
 interface DidactFiber<T = unknown> extends DidactElement<T> {
@@ -254,10 +255,25 @@ const useState = <T extends unknown>(initial: T): [T, Dispatch<SetStateAction<T>
   const oldHook = wipFiber.alternate?.hooks?.[hookIndex] as Hook<T> | undefined;
   const hook = {
     state: oldHook ? oldHook.state : initial,
+    queue: [],
+  } as Hook<T>;
+
+  const setState: Dispatch<SetStateAction<T>> = (action) => {
+    if (!currentRoot) throw new Error('Invalid useState call');
+    hook.queue.push(action);
+    wipRoot = {
+      dom: currentRoot.dom,
+      type: '',
+      props: currentRoot.props,
+      alternate: currentRoot,
+    };
+    nextUnitOfWork = wipRoot;
+    deletions = [];
   };
-  wipFiber.hooks.push(hook);
+
+  wipFiber.hooks.push(hook as Hook);
   hookIndex += 1;
-  return [hook.state];
+  return [hook.state, setState];
 };
 
 const updateHostComponent = (fiber: DidactFiber<string>): void => {
