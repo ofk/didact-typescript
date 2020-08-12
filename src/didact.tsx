@@ -10,6 +10,7 @@ declare namespace JSX {
 }
 
 type DOMAttributes = {
+  onClick?: () => void;
   children?: DidactNode;
 };
 
@@ -32,6 +33,10 @@ interface DidactFiber<T = unknown> extends DidactElement<T> {
   alternate?: DidactFiber | null;
   effectTag?: string;
 }
+
+type SetStateAction<S> = (prevState: S) => S;
+
+type Dispatch<A> = (value: A) => void;
 
 const createTextElement = (text: string): DidactElement<string> => ({
   type: 'TEXT_ELEMENT',
@@ -231,6 +236,10 @@ const updateFunctionComponent = (fiber: DidactFiber<FunctionComponent>): void =>
   reconcileChildren(fiber, children);
 };
 
+const useState = <T extends unknown>(initial: T): [T, Dispatch<SetStateAction<T>>] => {
+  // TODO
+};
+
 const updateHostComponent = (fiber: DidactFiber<string>): void => {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber);
@@ -293,11 +302,15 @@ const render = (element: DidactElement, container: HTMLElement): void => {
 const Didact = {
   createElement,
   render,
+  useState,
 };
 
-const App: FunctionComponent<{ name: string }> = (props) => <h1>Hi {props.name}</h1>;
+const Counter: FunctionComponent = () => {
+  const [count, setCount] = Didact.useState<number>(1);
+  return <h1 onClick={(): void => setCount((c) => c + 1)}>Count: {count}</h1>;
+};
 
-const element = <App name="foo" />;
+const element = <Counter />;
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const container = document.getElementById('root')!;
