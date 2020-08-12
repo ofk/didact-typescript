@@ -258,6 +258,11 @@ const useState = <T extends unknown>(initial: T): [T, Dispatch<SetStateAction<T>
     queue: [],
   } as Hook<T>;
 
+  const actions = oldHook ? oldHook.queue : [];
+  actions.forEach((action) => {
+    hook.state = action(hook.state);
+  });
+
   const setState: Dispatch<SetStateAction<T>> = (action) => {
     if (!currentRoot) throw new Error('Invalid useState call');
     hook.queue.push(action);
