@@ -52,6 +52,14 @@ const createElement = (
   },
 });
 
+const updateDom = (
+  dom: HTMLElement | Text,
+  prevProps: DidactElement['props'],
+  nextProps: DidactElement['props']
+): void => {
+  // TODO
+};
+
 const createDom = (fiber: DidactFiber): HTMLElement | Text => {
   // create dom nodes
   const dom =
@@ -59,12 +67,7 @@ const createDom = (fiber: DidactFiber): HTMLElement | Text => {
       ? document.createTextNode('')
       : document.createElement(fiber.type);
 
-  const isProperty = (key: string): boolean => key !== 'children';
-  Object.keys(fiber.props)
-    .filter(isProperty)
-    .forEach((name) => {
-      ((dom as unknown) as Record<string, unknown>)[name] = fiber.props[name];
-    });
+  updateDom(dom, { children: [] }, fiber.props);
 
   return dom;
 };
@@ -81,8 +84,14 @@ const commitWork = (fiber: DidactFiber | null | undefined): void => {
   if (!fiber.parent) throw new Error('Invalid fiber');
   const domParent = fiber.parent.dom;
   if (!domParent) throw new Error('Invalid fiber');
-  if (!fiber.dom) throw new Error('Invalid fiber');
-  domParent.appendChild(fiber.dom);
+  if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
+    domParent.appendChild(fiber.dom);
+  } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) {
+    updateDom(fiber.dom, fiber.alternate?.props || { children: [] }, fiber.props);
+  } else if (fiber.effectTag === 'DELETION') {
+    if (!fiber.dom) throw new Error('Invalid fiber');
+    domParent.removeChild(fiber.dom);
+  }
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 };
