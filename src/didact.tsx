@@ -19,12 +19,12 @@ type DidactNode = DidactElement | string;
 
 type FunctionComponent<P = Record<string, unknown>> = (props: P) => DidactElement;
 
-interface DidactElement {
-  type: string;
+interface DidactElement<T = unknown> {
+  type: T;
   props: Record<string, unknown> & { children: DidactElement[] };
 }
 
-interface DidactFiber extends DidactElement {
+interface DidactFiber<T = unknown> extends DidactElement<T> {
   dom: HTMLElement | Text | null;
   parent?: DidactFiber;
   child?: DidactFiber;
@@ -33,7 +33,7 @@ interface DidactFiber extends DidactElement {
   effectTag?: string;
 }
 
-const createTextElement = (text: string): DidactElement => ({
+const createTextElement = (text: string): DidactElement<string> => ({
   type: 'TEXT_ELEMENT',
   props: {
     nodeValue: text,
@@ -41,11 +41,11 @@ const createTextElement = (text: string): DidactElement => ({
   },
 });
 
-const createElement = (
-  type: string,
+const createElement = <T extends string>(
+  type: T,
   props: Record<string, unknown>,
   ...children: DidactNode[]
-): DidactElement => ({
+): DidactElement<T> => ({
   type,
   props: {
     ...props,
@@ -107,7 +107,7 @@ const updateDom = (
     });
 };
 
-const createDom = (fiber: DidactFiber): HTMLElement | Text => {
+const createDom = (fiber: DidactFiber<string>): HTMLElement | Text => {
   // create dom nodes
   const dom =
     fiber.type === 'TEXT_ELEMENT'
@@ -211,15 +211,24 @@ const reconcileChildren = (wipFiber: DidactFiber, elements: DidactElement[]): vo
   }
 };
 
-const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
-  // add dom node
+const updateFunctionComponent = (fiber: DidactFiber<FunctionComponent>): void => {
+  // TODO
+};
+
+const updateHostComponent = (fiber: DidactFiber<string>): void => {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber);
   }
+  reconcileChildren(fiber, fiber.props.children);
+};
 
-  // create new fibers
-  const elements = fiber.props.children;
-  reconcileChildren(fiber, elements);
+const performUnitOfWork = (fiber: DidactFiber): DidactFiber | null => {
+  const isFunctionComponent = fiber.type instanceof Function;
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber as DidactFiber<FunctionComponent>);
+  } else {
+    updateHostComponent(fiber as DidactFiber<string>);
+  }
 
   // return next unit of work
   if (fiber.child) {
