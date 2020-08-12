@@ -25,6 +25,10 @@ interface DidactElement<T = unknown> {
   props: Record<string, unknown> & { children: DidactElement[] };
 }
 
+interface Hook<T = unknown> {
+  state: T;
+}
+
 interface DidactFiber<T = unknown> extends DidactElement<T> {
   dom: HTMLElement | Text | null;
   parent?: DidactFiber;
@@ -32,7 +36,7 @@ interface DidactFiber<T = unknown> extends DidactElement<T> {
   sibling?: DidactFiber;
   alternate?: DidactFiber | null;
   effectTag?: string;
-  hooks?: never[];
+  hooks?: Hook[];
 }
 
 type SetStateAction<S> = (prevState: S) => S;
@@ -244,7 +248,16 @@ const updateFunctionComponent = (fiber: DidactFiber<FunctionComponent>): void =>
 };
 
 const useState = <T extends unknown>(initial: T): [T, Dispatch<SetStateAction<T>>] => {
-  // TODO
+  if (!wipFiber || !wipFiber.hooks) throw new Error('Invalid useState call');
+  if (hookIndex == null) throw new Error('Invalid useState call');
+
+  const oldHook = wipFiber.alternate?.hooks?.[hookIndex] as Hook<T> | undefined;
+  const hook = {
+    state: oldHook ? oldHook.state : initial,
+  };
+  wipFiber.hooks.push(hook);
+  hookIndex += 1;
+  return [hook.state];
 };
 
 const updateHostComponent = (fiber: DidactFiber<string>): void => {
