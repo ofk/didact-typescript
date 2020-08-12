@@ -52,7 +52,9 @@ const createElement = (
   },
 });
 
-const isProperty = (key: string): boolean => key !== 'children';
+const isEvent = (key: string): boolean => key.startsWith('on');
+
+const isProperty = (key: string): boolean => key !== 'children' && !isEvent(key);
 
 const isNew = (prev: DidactElement['props'], next: DidactElement['props']) => (
   key: string
@@ -67,6 +69,15 @@ const updateDom = (
   prevProps: DidactElement['props'],
   nextProps: DidactElement['props']
 ): void => {
+  // Remove old or changed event listeners
+  Object.keys(prevProps)
+    .filter(isEvent)
+    .filter((key) => !(key in nextProps) || isNew(prevProps, nextProps)(key))
+    .forEach((name) => {
+      const eventType = name.toLowerCase().substring(2);
+      dom.removeEventListener(eventType, prevProps[name] as EventListener);
+    });
+
   // Remove old properties
   Object.keys(prevProps)
     .filter(isProperty)
@@ -81,6 +92,15 @@ const updateDom = (
     .filter(isNew(prevProps, nextProps))
     .forEach((name) => {
       ((dom as unknown) as Record<string, unknown>)[name] = nextProps[name];
+    });
+
+  // Add event listeners
+  Object.keys(nextProps)
+    .filter(isEvent)
+    .filter(isNew(prevProps, nextProps))
+    .forEach((name) => {
+      const eventType = name.toLowerCase().substring(2);
+      dom.addEventListener(eventType, nextProps[name] as EventListener);
     });
 };
 
